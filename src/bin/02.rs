@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 advent_of_code::solution!(2);
 
 pub fn part_one(input: &str) -> Option<u32> {
@@ -6,68 +8,34 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let res = input.lines().map(parse_line_two).sum::<u32>();
+    let res = input.lines().filter_map(parse_line_two).sum::<u32>();
     Some(res)
 }
-pub fn parse_line_two(input: &str) -> u32 {
+pub fn parse_line_two(input: &str) -> Option<u32> {
     let games = input
         .split(':')
         .last()
         .expect("should be more than 0 games")
         .split(';');
-    let (mut r, mut g, mut b) = (1, 1, 1);
+    // let (mut r, mut g, mut b) = (1, 1, 1);
+    let mut counts =HashMap::<_,u32>::from([("red",1),("green",1),("blue",1)]);
     for game in games {
         let cubes = game.split(',');
         for cube in cubes {
-            match cube {
-                _ if cube.ends_with("red") => {
-                    if let Ok(c) = cube
-                        .trim()
-                        .split(' ')
-                        .next()
-                        .expect("shuould be a number string")
-                        .parse::<u32>()
-                    {
-                        if c > r {
-                            r = c;
-                        }
-                    }
-                }
-                _ if cube.ends_with("green") => {
-                    if let Ok(c) = cube
-                        .trim()
-                        .split(' ')
-                        .next()
-                        .expect("shuould be a number string")
-                        .parse::<u32>()
-                    {
-                        if c > g {
-                            g = c
-                        }
-                    }
-                }
-                _ if cube.ends_with("blue") => {
-                    if let Ok(c) = cube
-                        .trim()
-                        .split(' ')
-                        .next()
-                        .expect("shuould be a number string")
-                        .parse::<u32>()
-                    {
-                        if c > b {
-                            b = c
-                        }
-                    }
-                }
-                _ => (),
-            };
-            // dbg!(cube);
-        }
+            let mut cube=cube.trim().split(' ');
+            let amount = cube.next().unwrap().parse::<u32>().unwrap();
+            let color = cube.last().unwrap();
+            let count = counts.entry(color).or_insert(0);
+            *count = (*count).max(amount);
+
+        };
     }
-    r * g * b
+    // r * g * b
+    Some(counts["red"] * counts["green"] * counts["blue"])
+
 }
 pub fn parse_line_one(input: &str) -> u32 {
-    let (R, G, B) = (12, 13, 14);
+    let (r, g, b) = (12, 13, 14);
     let mut parts = input.split(':');
     let game_id = match parts.next() {
         Some(game) => {
@@ -100,7 +68,7 @@ pub fn parse_line_one(input: &str) -> u32 {
                         .expect("shuould be a number string")
                         .parse::<u32>()
                         .unwrap()
-                        > R
+                        > r
                     {
                         return 0;
                     }
@@ -113,7 +81,7 @@ pub fn parse_line_one(input: &str) -> u32 {
                         .expect("shuould be a number string")
                         .parse::<u32>()
                         .unwrap()
-                        > G
+                        > g
                     {
                         return 0;
                     }
@@ -126,7 +94,7 @@ pub fn parse_line_one(input: &str) -> u32 {
                         .expect("shuould be a number string")
                         .parse::<u32>()
                         .unwrap()
-                        > B
+                        > b
                     {
                         return 0;
                     }
@@ -160,12 +128,17 @@ mod tests {
     #[rstest]
     #[case("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green", 48)]
     #[case("Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue", 12)]
-#[case("Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red", 1560)]
-#[case("Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red", 630)]
-#[case("Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green", 36)]
+    #[case(
+        "Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red",
+        1560
+    )]
+    #[case(
+        "Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red",
+        630
+    )]
+    #[case("Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green", 36)]
     fn test_parse_line_two(#[case] line: &str, #[case] expeted: u32) {
-        let result = parse_line_two("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green");
-        assert_eq!(result, 48);
+        assert_eq!(parse_line_two(line), Some(expeted));
     }
 
     #[test]
