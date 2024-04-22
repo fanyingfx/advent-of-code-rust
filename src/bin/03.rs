@@ -79,7 +79,7 @@ pub fn part_two(input: &str) -> Option<u32> {
         .lines()
         .map(|line| line.chars().collect::<Vec<_>>())
         .collect::<Vec<_>>();
-    let (w, h) = (matrix[0].len(), matrix.len());
+    let (w, _h) = (matrix[0].len(), matrix.len());
     for (i, row) in matrix.iter().enumerate() {
         for (j, c) in row.iter().enumerate() {
             if c != &'*' {
